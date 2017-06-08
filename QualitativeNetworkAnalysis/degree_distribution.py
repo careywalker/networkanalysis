@@ -7,6 +7,9 @@ import numpy as np
 import pylab as pyl
 from scipy import stats
 
+def calculatealpha(slope):
+    return abs(slope) + 1
+
 DATA_FILE_NAME = 'data/twitter_combined.txt'
 DEGREE_THRESHOLD = 100
 
@@ -26,6 +29,7 @@ SLOPE, INTERCEPT, R_VALUE, P_VALUE, SLOPE_STD_ERROR = stats.linregress(DEGREE_LO
 
 print("Slope ", SLOPE)
 print("Y-intercept ", INTERCEPT)
+print("Alpha ", calculatealpha(SLOPE))
 
 X = np.array(DEGREE_LOG_VALUES)
 Y = np.array(RANK_LOG_VALUES)
