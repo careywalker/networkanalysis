@@ -16,6 +16,8 @@ DEGREE_THRESHOLD = 100
 G = nx.read_edgelist(DATA_FILE_NAME, comments='#', create_using=nx.DiGraph(), nodetype=int)
 NUMBER_OF_NODES = nx.number_of_nodes(G)
 
+nx.draw(G)
+
 DEGREE_SEQUENCE = sorted(nx.degree(G, nbunch=None, weight=None).values(), reverse=True)
 A = sorted([degree for degree in np.asarray(DEGREE_SEQUENCE) if degree >= DEGREE_THRESHOLD], reverse=True)
 
