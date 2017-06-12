@@ -10,7 +10,7 @@ from scipy import stats
 def calculatealpha(slope):
     return abs(slope) + 1
 
-DATA_FILE_NAME = 'data/twitter_combined.txt'
+DATA_FILE_NAME = 'data/Wiki-Vote.txt'
 DEGREE_THRESHOLD = 100
 
 G = nx.read_edgelist(DATA_FILE_NAME, comments='#', create_using=nx.DiGraph(), nodetype=int)
@@ -26,10 +26,14 @@ for f in A:
     DEGREE_LOG_VALUES.append(math.log(f))
 
 SLOPE, INTERCEPT, R_VALUE, P_VALUE, SLOPE_STD_ERROR = stats.linregress(DEGREE_LOG_VALUES, RANK_LOG_VALUES)
+ASSORTATIVITY_COEFFICIENT = nx.degree_assortativity_coefficient(G)
+CLUSTERING_COEFFICIENT = nx.average_clustering(G.to_undirected())
 
 print("Slope ", SLOPE)
 print("Y-intercept ", INTERCEPT)
 print("Alpha ", calculatealpha(SLOPE))
+print("Assortavity Coefficient: {0:0.2f}".format(ASSORTATIVITY_COEFFICIENT))
+print("Average Clustering: {0:0.2f}".format(CLUSTERING_COEFFICIENT))
 
 X = np.array(DEGREE_LOG_VALUES)
 Y = np.array(RANK_LOG_VALUES)
@@ -43,7 +47,7 @@ RESIDUAL_STD_ERROR = np.sqrt(np.sum(PRED_ERROR**2) / DEGREES_OF_FREEDOM)
 pyl.plot(X, Y, 'o')
 pyl.plot(X, PREDICT_Y, 'k-')
 pyl.grid(True)
-plt.title("Twitter Degree Distribution")
+plt.title(DATA_FILE_NAME + " Degree Distribution")
 plt.ylabel("Log Rank")
 plt.xlabel("Log Degree")
 pyl.show()
