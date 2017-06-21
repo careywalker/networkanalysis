@@ -9,6 +9,7 @@ from scipy import stats
 import utilities.common_functions as CommFunc
 import utilities.kronecker_product as Kron
 import utilities.average_accumulator as AvgAcc
+import utilities.convert_probability_matrix_to_adjency_matrix as AdjConverter
 
 VALUE1 = round(random.random(),1)
 VALUE2 = round(random.random(),1)
@@ -32,8 +33,13 @@ print("Length of matrix: ", len(KRONECKER_MATRIX))
 #convert KRONECKER_MATRIX into a numpy matrix which can then be used
 #as the data source for a graph
 A = np.matrix(KRONECKER_MATRIX)
-#create graph from numpy matrix
-G = nx.from_numpy_matrix(A)
+#convert KRONECKER_MATRIX to adjency matrix
+A = AdjConverter.to_adjency_matrix(A)
+#create graph from adjency matrix
+G = nx.from_numpy_matrix(np.array(A))
+nx.draw(G, with_labels=True)
+pylab.show()
+
 NUMBER_OF_NODES = nx.number_of_nodes(G)
 DEGREE_THRESHOLD = 1
 DEGREE_SEQUENCE = sorted(nx.degree(G, nbunch=None, weight=None).values(), reverse=True)
