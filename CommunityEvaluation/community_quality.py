@@ -10,6 +10,7 @@ import utilities.calculate_modularity as modularity
 #import the data and generate a graph
 DATA_FILE_NAME = 'data/facebook_combined.txt'
 G = nx.read_edgelist(DATA_FILE_NAME, comments='#', create_using=nx.Graph(), nodetype=int)
+G.name = DATA_FILE_NAME
 NUMBER_OF_NODES = G.number_of_nodes()
 
 #1.) Create communities using k-means clustering
@@ -19,9 +20,6 @@ EIGEN_POSITIONS, EIGEN_VECTORS = eigen.generate_eigen_positions(G, NUMBER_OF_NOD
 #1.2) Generate features
 FEATURES = np.column_stack((EIGEN_VECTORS[:, 1].real, EIGEN_VECTORS[:, 2].real))
 
-#compute modularity
-
-#get the edge cut count
 
 #helper function for plotting the graph
 def plot_graph(graph, positions, figure_number):
@@ -61,13 +59,13 @@ def plot_graph(graph, positions, figure_number):
 
 
 POSITIONS = nx.spring_layout(G)
-NODE_COLORS = ['red', 'yellow', 'olive', 'aqua', 'blue', 'fuchsia']
+NODE_COLORS = ['red', 'yellow', 'olive', 'aqua', 'blue', 'fuchsia', 'black', 'green']
 
 print(nx.info(G))
 print("_____________________________")
 
 
-for count in range(2, 7):
+for count in range(2, 9):
     COMMUNITIES = kmeans.cluster_nodes(G, FEATURES, POSITIONS, EIGEN_POSITIONS, count, NODE_COLORS)
     print("Community count : ", count)
     print("Number of edges cut in partitioning : ", cutcount.count_edge_cuts(G, COMMUNITIES))

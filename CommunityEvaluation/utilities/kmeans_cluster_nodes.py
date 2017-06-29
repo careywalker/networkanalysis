@@ -7,7 +7,7 @@ import numpy as np
 def cluster_nodes(graph, feat, pos, eigen_pos, number_of_communities, node_colors):
     """
     Cluster the graph and generate diagrams
-    
+
     returns the set of communities
     """
     book = kmeans(feat, number_of_communities)[0]
