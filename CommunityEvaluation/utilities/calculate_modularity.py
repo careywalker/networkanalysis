@@ -20,7 +20,7 @@ def calculate_modularity(graph, communities):
         number_of_edges_in_community = len(nx.edges(nx.subgraph(graph, community)))
         for key, value in nx.subgraph(graph, community).degree().items():
             sum_of_degrees_in_community += value
-        
+
         community_modularity = (
             number_of_edges_in_community / number_of_edges_in_network
             ) - math.pow((sum_of_degrees_in_community/(2*number_of_edges_in_network)), 2)
