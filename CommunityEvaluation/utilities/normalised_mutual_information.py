@@ -87,8 +87,11 @@ def calculate_normalised_mutual_information(x_clusters, x_clusters_node_count, y
 
     nmi = i_x_y / average_marginal_entropy
 
-    print("NMI = ", nmi)
+    #print("NMI = ", nmi)
 
-PARTITION1 = [[1, 2, 3, 4], [5, 6, 7, 8]]
-PARTITION2 = [[1, 2, 4], [3, 6], [6, 7, 8]]
-calculate_normalised_mutual_information(PARTITION1, 8, PARTITION2, 8)
+    return nmi
+
+#The below is just testing data
+#PARTITION1 = [[1, 2, 3, 4], [5, 6, 7, 8]]
+#PARTITION2 = [[1, 2, 4], [3, 6], [6, 7, 8]]
+#calculate_normalised_mutual_information(PARTITION1, 8, PARTITION2, 8)

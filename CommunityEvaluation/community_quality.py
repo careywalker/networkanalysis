@@ -1,4 +1,5 @@
 """Evaluates the quality of a community"""
+import operator
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,10 +9,11 @@ import utilities.kmeans_cluster_nodes as kmeans
 import utilities.count_edge_cuts as cutcount
 import utilities.calculate_modularity as modularity
 import utilities.compute_rand_index as randindex
+import utilities.normalised_mutual_information as nmi
 
 #import the data and generate a graph
-#DATA_FILE_NAME = 'data/facebook_combined.txt'
-DATA_FILE_NAME = 'data/Wiki-Vote-Sample.txt'
+DATA_FILE_NAME = 'data/facebook_combined.txt'
+#DATA_FILE_NAME = 'data/Wiki-Vote-Sample.txt'
 G = nx.read_edgelist(DATA_FILE_NAME, comments='#', create_using=nx.Graph(), nodetype=int)
 G.name = DATA_FILE_NAME
 NUMBER_OF_NODES = G.number_of_nodes()
@@ -68,14 +70,14 @@ print(nx.info(G))
 print("_____________________________")
 
 
-for count in range(2, 3):
+PARTITIONS = []
+partition_counter = 0
+for count in range(5, 7):
     COMMUNITIES = kmeans.cluster_nodes(G, FEATURES, POSITIONS, EIGEN_POSITIONS, count, NODE_COLORS)
+    #sort the communities in the partition using the node in the partition
+    COMMUNITIES.sort(key=operator.itemgetter(0))
+    PARTITIONS.append(COMMUNITIES)
     #randindex.compute_rand_index(G, COMMUNITIES[0], COMMUNITIES[1])
-    X = [1, 0, 0, 1]
-    Y = [1, 0, 0, 1, 0, 1]
-    NMI = normalized_mutual_info_score(X, Y) #returns 0.345592029944
-    #NMI = normalized_mutual_info_score([0, 3, 3, 4], [0, 3, 0, 3]) #returns 0.408248290464
-    print("NMI = ", NMI)
     #TODO: Try to see if you can generate a scree plot to
     # #get your K for k-means clustering
     #It should match the largest modularity value, I think it should anyway
@@ -85,7 +87,10 @@ for count in range(2, 3):
     print("Number of edges cut in partitioning : ", cutcount.count_edge_cuts(G, COMMUNITIES))
     print("Modularity of the partitioning : ", modularity.calculate_modularity(G, COMMUNITIES))
     print("_____________________________")
+    partition_counter += 1
 
+NMI = nmi.calculate_normalised_mutual_information(PARTITIONS[0], NUMBER_OF_NODES, PARTITIONS[1], NUMBER_OF_NODES)
+print("NMI = ", NMI)
 #plot_graph(G, EIGEN_POSITIONS, 1)
 
 
