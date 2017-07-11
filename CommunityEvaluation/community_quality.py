@@ -3,13 +3,12 @@ import operator
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics.cluster import normalized_mutual_info_score
 import utilities.generate_eigen_positions as eigen
 import utilities.kmeans_cluster_nodes as kmeans
 import utilities.count_edge_cuts as cutcount
 import utilities.calculate_modularity as modularity
-import utilities.compute_rand_index as randindex
 import utilities.normalised_mutual_information as nmi
+import utilities.hamming_cluster_nodes as hamcluster
 
 #import the data and generate a graph
 DATA_FILE_NAME = 'data/facebook_combined.txt'
@@ -72,14 +71,14 @@ print("_____________________________")
 
 PARTITIONS = []
 partition_counter = 0
-for count in range(5, 7):
+for count in range(2, 4):
     COMMUNITIES = kmeans.cluster_nodes(G, FEATURES, POSITIONS, EIGEN_POSITIONS, count, NODE_COLORS)
     #sort the communities in the partition using the node in the partition
     COMMUNITIES.sort(key=operator.itemgetter(0))
     PARTITIONS.append(COMMUNITIES)
     #randindex.compute_rand_index(G, COMMUNITIES[0], COMMUNITIES[1])
     #TODO: Try to see if you can generate a scree plot to
-    # #get your K for k-means clustering
+    #get your K for k-means clustering
     #It should match the largest modularity value, I think it should anyway
     #the k should be the point where the intra cluster distance average has the
     #most significant decrease in change
@@ -90,10 +89,20 @@ for count in range(5, 7):
     partition_counter += 1
 
 NMI = nmi.calculate_normalised_mutual_information(PARTITIONS[0], NUMBER_OF_NODES, PARTITIONS[1], NUMBER_OF_NODES)
-print("NMI = ", NMI)
+print("NMI kmeans = ", NMI)
 #plot_graph(G, EIGEN_POSITIONS, 1)
 
 
+print("-------------------------------------------------------------------------")
+#cluster graph using Hamming Distance
+HAMCOMMUNITIES = hamcluster.create_communities(G, 0.001)
+# print("Cluster 1 size : ", CLUSTER1)
+# print("Cluster 2 size : ", CLUSTER2)
+# print(CLUSTER1)
+# print(CLUSTER2)
+
+NMI = nmi.calculate_normalised_mutual_information(PARTITIONS[0], NUMBER_OF_NODES, HAMCOMMUNITIES, NUMBER_OF_NODES)
+print("NMI ham cluster = ", NMI)
 
 #plt.show()
 print("done")
