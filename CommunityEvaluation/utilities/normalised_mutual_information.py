@@ -10,7 +10,6 @@ if a node is in one of the k clusters
 if a node is in one of the k clusters
 """
 import math
-import networkx as nx
 import numpy as np
 
 def calculate_entropy(matrix):
@@ -65,25 +64,25 @@ def calculate_normalised_mutual_information(x_clusters, x_clusters_node_count, y
         for y in range(0, tx_y_matrix.shape[1]):
             tx_y_matrix[x, y] = tx_y_matrix[x, y] / x_clusters_node_count
 
-    print("p(x,y) \n", tx_y_matrix)
-    print("p(x) = ", np.mean(x_matrix, axis=0))
-    print("p(y) = ", np.mean(y_matrix, axis=0))
+    #print("p(x,y) \n", tx_y_matrix)
+    #print("p(x) = ", np.mean(x_matrix, axis=0))
+    #print("p(y) = ", np.mean(y_matrix, axis=0))
 
     h_x = calculate_entropy(np.mean(x_matrix, axis=0))
     h_y = calculate_entropy(np.mean(y_matrix, axis=0))
     h_x_y = calculate_entropy(tx_y_matrix.flatten())
 
-    print("H(x) = ", h_x)
-    print("H(y) = ", h_y)
-    print("H(x,y) = ", h_x_y)
+    #print("H(x) = ", h_x)
+    #print("H(y) = ", h_y)
+    #print("H(x,y) = ", h_x_y)
 
     i_x_y = h_x + h_y - h_x_y
 
-    print("I(x,y) = ", i_x_y)
+    #print("I(x,y) = ", i_x_y)
 
     average_marginal_entropy = (h_x + h_y) / 2
 
-    print("average marginal entropy = ", average_marginal_entropy)
+    #print("average marginal entropy = ", average_marginal_entropy)
 
     nmi = i_x_y / average_marginal_entropy
 

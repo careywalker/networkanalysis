@@ -48,4 +48,69 @@ print("cluster1 : ", cluster1)
 print("cluster2 : ", cluster2)
 
 print(np.unique(cluster1))
-print(np.unique(cluster2))        
+print(np.unique(cluster2))
+
+
+#helper function for plotting the graph
+def plot_graph(graph, positions, figure_number):
+    """plots the graph of the data"""
+    label = dict()
+    labelpos = dict()
+    for i in range(graph.number_of_nodes()):
+        label[i] = i
+        labelpos[i] = positions[i][0]+0.02, positions[i][1]+0.02
+
+    fig = plt.figure(figure_number, figsize=(8, 8))
+
+    fig.suptitle(
+        "Figure Number : " + str(figure_number),
+        fontsize=14, fontweight='bold'
+        )
+
+    fig.clf()
+
+    nx.draw_networkx_nodes(graph,
+                           positions,
+                           node_size=40,
+                           hold=False,
+                          )
+
+    nx.draw_networkx_edges(graph,
+                           positions,
+                           hold=True
+                          )
+
+    nx.draw_networkx_labels(graph,
+                            labelpos,
+                            label,
+                            font_size=10,
+                            hold=True,
+                           )
+
+
+POSITIONS = nx.spring_layout(G)
+NODE_COLORS = ['red', 'yellow', 'olive', 'aqua', 'blue', 'fuchsia', 'black', 'green']
+
+
+
+
+______________________________________________________________________________________
+    plt.figure(1)
+    for i in range(number_of_communities):
+        nx.draw_networkx_nodes(graph,
+                               eigen_pos,
+                               node_size=40,
+                               hold=True,
+                               nodelist=communities[i],
+                               node_color=node_colors[i]
+                              )
+
+    plt.figure(2)
+    for i in range(number_of_communities):
+        nx.draw_networkx_nodes(graph,
+                               pos,
+                               node_size=40,
+                               hold=True,
+                               nodelist=communities[i],
+                               node_color=node_colors[i]
+                              )

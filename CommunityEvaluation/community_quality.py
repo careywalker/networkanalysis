@@ -1,108 +1,79 @@
 """Evaluates the quality of a community"""
-import operator
+from timeit import default_timer as timer
 import networkx as nx
-import matplotlib.pyplot as plt
-import numpy as np
-import utilities.generate_eigen_positions as eigen
 import utilities.kmeans_cluster_nodes as kmeans
 import utilities.count_edge_cuts as cutcount
 import utilities.calculate_modularity as modularity
 import utilities.normalised_mutual_information as nmi
 import utilities.hamming_cluster_nodes as hamcluster
+import utilities.heirarchical_clustering as heircluster
+
+def compute_nmi(comparison_name, partition1, partition2, node_count):
+    NMI = nmi.calculate_normalised_mutual_information(partition1, node_count, partition2, node_count)
+    print(comparison_name, NMI)
+
+def compute_edge_cut_count(graph, communities):
+    COUNT = cutcount.count_edge_cuts(graph, communities)
+    print("Edges Cut : ", COUNT)
+
+def compute_modularity(graph, communities):
+    MODULARITY = modularity.calculate_modularity(graph, communities)
+    print("Modularity : ", MODULARITY)
+
+def print_divider_large():
+    print("-----------------------------------------------------")    
+
+def print_divider_sm():
+    print("-----------------")
+
+def print_execution_time(end, start):
+    print("Time to execute clustering : ", end - start)
+
+def print_cluster_size(size):
+    print("Community Count : ", size)
 
 #import the data and generate a graph
 DATA_FILE_NAME = 'data/facebook_combined.txt'
 #DATA_FILE_NAME = 'data/Wiki-Vote-Sample.txt'
 G = nx.read_edgelist(DATA_FILE_NAME, comments='#', create_using=nx.Graph(), nodetype=int)
 G.name = DATA_FILE_NAME
-NUMBER_OF_NODES = G.number_of_nodes()
-
-#1.) Create communities using k-means clustering
-#1.1) Generate eigen positions
-EIGEN_POSITIONS, EIGEN_VECTORS = eigen.generate_eigen_positions(G, NUMBER_OF_NODES)
-
-#1.2) Generate features
-FEATURES = np.column_stack((EIGEN_VECTORS[:, 1].real, EIGEN_VECTORS[:, 2].real))
-
-
-#helper function for plotting the graph
-def plot_graph(graph, positions, figure_number):
-    """plots the graph of the data"""
-    label = dict()
-    labelpos = dict()
-    for i in range(graph.number_of_nodes()):
-        label[i] = i
-        labelpos[i] = positions[i][0]+0.02, positions[i][1]+0.02
-
-    fig = plt.figure(figure_number, figsize=(8, 8))
-
-    fig.suptitle(
-        "Figure Number : " + str(figure_number),
-        fontsize=14, fontweight='bold'
-        )
-
-    fig.clf()
-
-    nx.draw_networkx_nodes(graph,
-                           positions,
-                           node_size=40,
-                           hold=False,
-                          )
-
-    nx.draw_networkx_edges(graph,
-                           positions,
-                           hold=True
-                          )
-
-    nx.draw_networkx_labels(graph,
-                            labelpos,
-                            label,
-                            font_size=10,
-                            hold=True,
-                           )
-
-
-POSITIONS = nx.spring_layout(G)
-NODE_COLORS = ['red', 'yellow', 'olive', 'aqua', 'blue', 'fuchsia', 'black', 'green']
-
+heirarchichal_clusters = heircluster.create_hc(G)
 print(nx.info(G))
-print("_____________________________")
 
+NUMBER_OF_NODES = G.number_of_nodes()
+print_divider_sm()
+start = timer()
+kmeans_clusters = kmeans.cluster_nodes(G, 2)
+end = timer()
+print("k-means cluster stats")
+print_cluster_size(len(kmeans_clusters))
+print_execution_time(end, start)
+compute_edge_cut_count(G, kmeans_clusters)
+compute_modularity(G, kmeans_clusters)
+print_divider_sm()
 
-PARTITIONS = []
-partition_counter = 0
-for count in range(2, 4):
-    COMMUNITIES = kmeans.cluster_nodes(G, FEATURES, POSITIONS, EIGEN_POSITIONS, count, NODE_COLORS)
-    #sort the communities in the partition using the node in the partition
-    COMMUNITIES.sort(key=operator.itemgetter(0))
-    PARTITIONS.append(COMMUNITIES)
-    #randindex.compute_rand_index(G, COMMUNITIES[0], COMMUNITIES[1])
-    #TODO: Try to see if you can generate a scree plot to
-    #get your K for k-means clustering
-    #It should match the largest modularity value, I think it should anyway
-    #the k should be the point where the intra cluster distance average has the
-    #most significant decrease in change
-    print("Community count : ", count)
-    print("Number of edges cut in partitioning : ", cutcount.count_edge_cuts(G, COMMUNITIES))
-    print("Modularity of the partitioning : ", modularity.calculate_modularity(G, COMMUNITIES))
-    print("_____________________________")
-    partition_counter += 1
+start = timer()
+hamming_clusters = hamcluster.create_communities(G, 0.001)
+end = timer()
+print("hamming distance cluster stats")
+print_cluster_size(len(hamming_clusters))
+print_execution_time(end, start)
+compute_edge_cut_count(G, hamming_clusters)
+compute_modularity(G, hamming_clusters)
+print_divider_sm()
 
-NMI = nmi.calculate_normalised_mutual_information(PARTITIONS[0], NUMBER_OF_NODES, PARTITIONS[1], NUMBER_OF_NODES)
-print("NMI kmeans = ", NMI)
-#plot_graph(G, EIGEN_POSITIONS, 1)
+start = timer()
+heirarchichal_clusters = heircluster.create_hc(G)
+end = timer()
+print("Heirarchichal cluster stats")
+print_cluster_size(len(heirarchichal_clusters))
+print_execution_time(end, start)
+compute_edge_cut_count(G, heirarchichal_clusters)
+compute_modularity(G, heirarchichal_clusters)
+print_divider_sm()
 
+compute_nmi("NMI kmeans vs hamming : ", kmeans_clusters, hamming_clusters, NUMBER_OF_NODES)
+compute_nmi("NMI kmeans vs heirarchichal : ", kmeans_clusters, heirarchichal_clusters, NUMBER_OF_NODES)
+compute_nmi("NMI heirarchichal vs hamming : ", hamming_clusters, heirarchichal_clusters, NUMBER_OF_NODES)
 
-print("-------------------------------------------------------------------------")
-#cluster graph using Hamming Distance
-HAMCOMMUNITIES = hamcluster.create_communities(G, 0.001)
-# print("Cluster 1 size : ", CLUSTER1)
-# print("Cluster 2 size : ", CLUSTER2)
-# print(CLUSTER1)
-# print(CLUSTER2)
-
-NMI = nmi.calculate_normalised_mutual_information(PARTITIONS[0], NUMBER_OF_NODES, HAMCOMMUNITIES, NUMBER_OF_NODES)
-print("NMI ham cluster = ", NMI)
-
-#plt.show()
 print("done")
