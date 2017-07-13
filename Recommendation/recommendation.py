@@ -3,18 +3,30 @@
     Memory Based Colloborative Filtering
     User Item Colloborative Filtering
     rating data is in the format
-    userid, productid, categoryid, rating, helpfulness, timestamp    
+    userid, productid, categoryid, rating, helpfulness, timestamp
 """
 
+import warnings
 from scipy.spatial.distance import hamming
 import numpy as np
 import pandas as pan
-import warnings
+import networkx as nx
 
+#for trust data, give all trusted people a distance of 2 to put them in front
+#read in the trust data as a graph which will allow checking if two nodes have an edge
+import networkx as nx
+trustdata=pan.read_csv('data/trust.txt',sep=" ",header=0,names=['node1', 'node2', 'timestamp'])
+G = nx.from_pandas_dataframe(trustdata, 'node1', 'node2')
+nx.info(G)
+
+#a simple check to see if there is an edge between two nodes
 def distance(user1, user2):
-    user1Ratings = userProductRatingMatrix.transpose()[user1]
-    user2Ratings = userProductRatingMatrix.transpose()[user2]
-    return hamming(user1Ratings, user2Ratings)
+    if G.has_edge(user1, user2):
+        return 2
+    else:
+        user1Ratings = userProductRatingMatrix.transpose()[user1]
+        user2Ratings = userProductRatingMatrix.transpose()[user2]
+        return hamming(user1Ratings, user2Ratings)
 
 def nearestNeighbours(user,K=10):
     allUsers = pan.DataFrame(userProductRatingMatrix.index)
