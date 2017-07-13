@@ -9,6 +9,7 @@
 from scipy.spatial.distance import hamming
 import numpy as np
 import pandas as pan
+import warnings
 
 def distance(user1, user2):
     user1Ratings = userProductRatingMatrix.transpose()[user1]
@@ -22,7 +23,19 @@ def nearestNeighbours(user,K=10):
     kNearestUsers = allUsers.sort_values(["distance"], ascending=True)["user"][:K]
     return kNearestUsers
 
-RATING_MATRIX_FILE = "./data/rating-sample.txt"
+def getTopNProductsPerUser(user, K=10):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        KNearestNeighbours = nearestNeighbours(user)
+        NearestNeighbourRatings = userProductRatingMatrix[userProductRatingMatrix.index.isin(KNearestNeighbours)]
+        avgRating = NearestNeighbourRatings.apply(np.nanmean).dropna()
+        productsAlreadyRated = userProductRatingMatrix.transpose()[user].dropna().index
+        #remove average rating for products already rated by user
+        avgRating = avgRating[-avgRating.index.isin(productsAlreadyRated)]
+        topNCatProds = avgRating.sort_values(ascending=False).index[:K]
+    return topNCatProds
+
+RATING_MATRIX_FILE = "./data/rating.txt"
 ratings_df = pan.read_csv(RATING_MATRIX_FILE, sep=' ', names=['user', 'productids', 'category', 'rating', 'helpfulness', 'timestamp'])
 #ratings_df["catprod"] = ratings_df["category"].map(str) + "-" + ratings_df["product"].map(str)
 
@@ -30,18 +43,14 @@ users = ratings_df.user.value_counts()
 products = ratings_df.productids.value_counts()
 print('Number of users = ' + str(users.shape) + ' | Number of products = ' + str(products.shape))
 
+usersPerProduct = ratings_df.productids.value_counts()
+productsPerUser = ratings_df.user.value_counts()
+ratings_df = ratings_df[ratings_df["productids"].isin(usersPerProduct[usersPerProduct>10].index)]
 userProductRatingMatrix = pan.pivot_table(ratings_df, values='rating', index=['user'], columns=['productids'])
 
-user = 2
-KNearestNeighbours = nearestNeighbours(user)
-NearestNeighbourRatings = userProductRatingMatrix[userProductRatingMatrix.index[KNearestNeighbours]]
-avgRating = NearestNeighbourRatings.apply(np.nanmean).dropna()
+user = 1
+topn = 10
 
-productsAlreadyRated = userProductRatingMatrix.transpose()[user].dropna().index
-
-#remove average rating for products already rated by user
-#avgRating = avgRating[-avgRating.index[productsAlreadyRated]]
-
-TopNProducts = 10
-topNCatProds = avgRating.sort_values(ascending=False).index[:TopNProducts]
-print(topNCatProds.values)
+for line in userProductRatingMatrix:
+    products = getTopNProductsPerUser(line).values
+    print('User Id: ' + repr(line) + " || Recommended Products : " + ', '.join([str(product) for product in products]))
