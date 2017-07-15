@@ -16,7 +16,7 @@ import threading as th
 #for trust data, give all trusted people a distance of 2 to put them in front
 #read in the trust data as a graph which will allow checking if two nodes have an edge
 import networkx as nx
-p_lock = th.Lock()
+
 trustdata=pan.read_csv('data/trust.txt',sep=" ",header=0,names=['node1', 'node2', 'timestamp'])
 G = nx.from_pandas_dataframe(trustdata, 'node1', 'node2')
 nx.info(G)
@@ -51,7 +51,7 @@ def getTopNProductsPerUser(user, K=10, usetrust=False):
         productsAlreadyRated = userProductRatingMatrix.transpose()[user].dropna().index
         #remove average rating for products already rated by user
         avgRating = avgRating[-avgRating.index.isin(productsAlreadyRated)]
-        cummulative_rating = avgRating.sort_values(ascending=False)[:K].sum()
+        cummulative_rating = avgRating.sort_values(ascending=False)[:(K*K*K)].sum()
         topNCatProds = avgRating.sort_values(ascending=False).index[:K]
     return topNCatProds, cummulative_rating
 
@@ -78,10 +78,16 @@ topn = 10
 usetrust = True
 
 threads = []
-for row in userProductRatingMatrix.head(5).itertuples():
+print("With Trust = ", usetrust)
+for row in userProductRatingMatrix.head(10).itertuples():
     #t = th.Thread(target=dowork, args=(row[0], topn, usetrust))
     #threads.append(t)
     #t.start()
     #th._start_new_thread(dowork, (row[0], topn, usetrust))
     dowork(row[0], topn, usetrust)
     #print(row[0])
+
+usetrust = False
+print("With Trust = ", usetrust)
+for row in userProductRatingMatrix.head(10).itertuples():
+    dowork(row[0], topn, usetrust)
