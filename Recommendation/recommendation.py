@@ -80,12 +80,11 @@ if __name__ == '__main__':
     topn = 10
     usetrust = False
     print("With Trust = ", usetrust)
-    counter = 1
-    while (counter < 6):
-        p = Process(target=dowork, args=(counter, topn, usetrust, userProductRatingMatrix, G))
-        p.start()
-        p.join
-        counter += 1
 
-    #for row in userProductRatingMatrix.head(10).itertuples():
-    #    dowork(row[0], topn, usetrust)
+    for row in userProductRatingMatrix.head(10).itertuples():
+        dowork(row[0], topn, usetrust, userProductRatingMatrix, G)
+
+    usetrust = True
+    print("With Trust = ", usetrust)    
+    for row in userProductRatingMatrix.head(10).itertuples():
+        dowork(row[0], topn, usetrust, userProductRatingMatrix, G)
